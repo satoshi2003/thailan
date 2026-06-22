@@ -5,6 +5,7 @@ import sys
 def get_m3u8_link():
     session = requests.Session()
     
+    # Bổ sung đầy đủ 100% header từ lệnh curl của bạn
     headers = {
         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
         "accept-language": "vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5",
@@ -32,7 +33,7 @@ def get_m3u8_link():
         print(f"[!] Lỗi khi truy cập trang chính: {e}")
         sys.exit(1)
 
-    # BƯỚC 1: Trích xuất tham số từ Javascript thay vì từ thẻ iframe
+    # BƯỚC 1: Trích xuất tham số từ đoạn mã Javascript
     try:
         cxid = re.search(r'cxid=([a-zA-Z0-9]+)', res_main.text).group(1)
         tmpx = re.search(r'tmpx=([0-9\.]+)', res_main.text).group(1)
@@ -43,7 +44,7 @@ def get_m3u8_link():
         print(f"[*] Đã lắp ráp link iframe thành công: {iframe_url}")
         
     except AttributeError:
-        print("[!] Không tìm thấy tham số JS. Có thể web đã đổi cấu trúc hoặc chặn IP.")
+        print("[!] Không tìm thấy tham số JS. Có thể web đã đổi cấu trúc hoặc chặn IP Github.")
         sys.exit(1)
 
     # BƯỚC 2: Truy cập link iframe để lấy link .m3u8
@@ -58,7 +59,7 @@ def get_m3u8_link():
         print(f"[!] Lỗi khi truy cập iframe: {e}")
         sys.exit(1)
 
-    # Tìm link m3u8
+    # Tìm link m3u8 trong mã nguồn của iframe
     m3u8_match = re.search(r'src:\s*["\']([^"\']+\.m3u8[^"\']*)["\']', res_iframe.text)
     
     if not m3u8_match:
@@ -71,8 +72,16 @@ def get_m3u8_link():
     print(m3u8_url)
     print("-" * 50)
     
-    with open("stream_link.txt", "w", encoding="utf-8") as f:
-        f.write(m3u8_url)
+    # BƯỚC 3: Tạo file playlist.m3u8 chuẩn IPTV
+    playlist_content = f"""#EXTM3U
+#EXTINF:-1 tvg-id="ch39" tvg-logo="https://www.adintrend.tv/images02/logo4.png" group-title="Thai TV", Thairath TV 32 HD
+{m3u8_url}
+"""
+    
+    with open("playlist.m3u8", "w", encoding="utf-8") as f:
+        f.write(playlist_content)
+        
+    print("[*] Đã tạo thành công file playlist.m3u8!")
 
 if __name__ == "__main__":
     get_m3u8_link()
