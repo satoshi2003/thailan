@@ -1,9 +1,9 @@
 name: Get Adintrend M3U8 Link
 
 on:
-  workflow_dispatch: # Cho phép bạn bấm nút "Run workflow" thủ công trên Github
+  workflow_dispatch: # Cho phép chạy thủ công
   schedule:
-    - cron: '0 */6 * * *' # Chạy tự động mỗi 6 tiếng (tuỳ chỉnh theo múi giờ UTC)
+    - cron: '0 */6 * * *' # Chạy tự động mỗi 6 tiếng
 
 jobs:
   fetch-m3u8:
@@ -26,9 +26,9 @@ jobs:
       - name: Run Scraper Script
         run: python script.py
 
-      - name: Upload link as artifact (Tuỳ chọn)
+      - name: Upload link as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: m3u8-link
-          path: stream_link.txt
+          name: IPTV-Playlist
+          path: playlist.m3u8
           retention-days: 1
