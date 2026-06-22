@@ -1,13 +1,17 @@
 name: Get Adintrend M3U8 Link
 
 on:
-  workflow_dispatch: # Cho phép chạy thủ công
+  workflow_dispatch: # Cho phép chạy thủ công bằng nút bấm
   schedule:
-    - cron: '0 */6 * * *' # Chạy tự động mỗi 6 tiếng
+    - cron: '0 */6 * * *' # Tự động chạy mỗi 6 tiếng
 
 jobs:
   fetch-m3u8:
     runs-on: ubuntu-latest
+    
+    # QUAN TRỌNG: Cấp quyền ghi để Bot có thể tự push file vào Repo của bạn
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -26,9 +30,14 @@ jobs:
       - name: Run Scraper Script
         run: python script.py
 
-      - name: Upload link as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: IPTV-Playlist
-          path: playlist.m3u8
-          retention-days: 1
+      - name: Commit and Push playlist.m3u8
+        run: |
+          # Cấu hình thông tin Bot GitHub
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Thêm file playlist.m3u8 vừa tạo vào danh sách commit
+          git add playlist.m3u8
+          
+          # Kiểm tra nếu file có thay đổi mới thực hiện commit để tránh lỗi lặp bài
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Hệ thống tự động cập nhật playlist.m3u8" && git push)
